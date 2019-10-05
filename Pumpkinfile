@@ -4,6 +4,11 @@ resource "src-git": {
   param revision: "$(context.git.commit)"
 }
 
+resource "gitops-git": {
+  type: "git"
+  param url: "https://github.com/your-user/cicd-hello-world-gitops"
+}
+
 resource "docker-image": {
   type: "image"
   param url: "your-user/hello-world:$(context.build.name)"
@@ -48,9 +53,24 @@ task "build": {
   ]
 }
 
+task "deploy": {
+  inputs: ["docker-image", "gitops-git"]
+  steps: [
+    {
+      name: "update-gitops-repo"
+      image: "mesosphere/pumpkin-update-gitops-repo:latest"
+      workingDir: "/workspace/gitops-git"
+      args: [
+        "-git-revision=$(context.git.commit)",
+        "-docker-image-digest=$(inputs.resources.docker-image.digest)"
+      ]
+    }
+  ]
+}
+
 actions: [
   {
-    tasks: ["build"]
+    tasks: ["build", "deploy"]
     on push branches: ["master"]
   },
   {
