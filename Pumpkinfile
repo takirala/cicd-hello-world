@@ -58,11 +58,11 @@ task "deploy": {
   steps: [
     {
       name: "update-gitops-repo"
-      image: "mesosphere/pumpkin-update-gitops-repo:latest"
+      image: "mesosphere/update-gitops-repo:v1.0"
       workingDir: "/workspace/gitops-git"
       args: [
         "-git-revision=$(context.git.commit)",
-        "-docker-image-digest=$(inputs.resources.docker-image.digest)"
+        "-substitute=imageName=your-user/hello-world@$(inputs.resources.docker-image.digest)"
       ]
     }
   ]
